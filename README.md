@@ -56,7 +56,7 @@ watermark-remover/
 cd watermark-remover
 
 # 2. Construir y ejecutar con Docker Compose
-docker-compose up --build
+docker compose up --build
 
 # 3. Abrir navegador en http://localhost:8000
 ```
@@ -147,7 +147,7 @@ services:
 
 Luego ejecutar:
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 ### Ajustar Límites de Memoria
