@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  watermark-remover:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: watermark-remover
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistir archivos temporales (opcional)
+      - ./backend/temp_uploads:/app/temp_uploads
+      - ./backend/temp_processed:/app/temp_processed
+      # Persistir caché de modelos de HuggingFace
+      - huggingface_cache:/root/.cache/huggingface
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Descomentar si tienes GPU NVIDIA
+      # - CUDA_VISIBLE_DEVICES=0
+    restart: unless-stopped
+    # Descomentar para usar GPU NVIDIA
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+volumes:
+  huggingface_cache:
+    driver: local
