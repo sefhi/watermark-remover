@@ -39,7 +39,7 @@ RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
 # Copiar código del backend
-COPY backend/ /app/
+COPY backend/app/ /app/
 
 # Copiar frontend estático
 COPY frontend/public/ /app/static/
@@ -51,4 +51,4 @@ RUN mkdir -p /app/temp_uploads /app/temp_processed
 EXPOSE 8000
 
 # Comando para ejecutar la aplicación
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

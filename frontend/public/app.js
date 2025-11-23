@@ -6,9 +6,7 @@
 const { useState, useRef, useEffect } = React;
 
 // Configuración de la API
-const API_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:8000'
-    : `${window.location.protocol}//${window.location.hostname}:8000`;
+const API_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 /**
  * Componente principal de la aplicación

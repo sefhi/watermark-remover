@@ -15,10 +15,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 
-from .video_processor import VideoProcessor
+from video_processor import VideoProcessor
 
 # Configuración de directorios
-BASE_DIR = Path(__file__).parent.parent
+# Detectar si estamos en Docker o local
+if Path("/app/static").exists():
+    # Estamos en Docker
+    BASE_DIR = Path("/app")
+else:
+    # Desarrollo local
+    BASE_DIR = Path(__file__).parent.parent
+
 UPLOAD_DIR = BASE_DIR / "temp_uploads"
 PROCESSED_DIR = BASE_DIR / "temp_processed"
 STATIC_DIR = BASE_DIR / "static"
