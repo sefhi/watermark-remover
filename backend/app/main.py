@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 
-from video_processor import VideoProcessor
+from .video_processor import VideoProcessor
 
 # Configuración de directorios
 BASE_DIR = Path(__file__).parent.parent
