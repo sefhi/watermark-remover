@@ -152,8 +152,8 @@ function WatermarkRemoverApp() {
     return (
         <div className="app-container">
             <header className="app-header">
-                <h1>🎬 Watermark Remover</h1>
-                <p>Remueve marcas de agua de videos usando Inteligencia Artificial</p>
+                <h1>Watermark Remover</h1>
+                <p>Professional AI-Powered Video Processing</p>
             </header>
 
             <main className="app-main">
@@ -221,10 +221,10 @@ function UploadStep({ videoFile, onFileSelect, onDrop, onDragOver, onUpload, pro
             >
                 {!videoFile ? (
                     <>
-                        <div className="drop-zone-icon">📹</div>
+                        <div className="drop-zone-icon">▶</div>
                         <p className="drop-zone-text">
-                            Arrastra tu video aquí<br />
-                            <span>o haz clic para seleccionar</span>
+                            Drop your video here<br />
+                            <span>or click to select file</span>
                         </p>
                         <input
                             type="file"
@@ -233,7 +233,7 @@ function UploadStep({ videoFile, onFileSelect, onDrop, onDragOver, onUpload, pro
                             className="file-input"
                         />
                         <p className="supported-formats">
-                            Formatos soportados: MP4, MOV, AVI, MKV, WebM
+                            Supported Formats: MP4, MOV, AVI, MKV, WebM
                         </p>
                     </>
                 ) : (
@@ -250,14 +250,14 @@ function UploadStep({ videoFile, onFileSelect, onDrop, onDragOver, onUpload, pro
                             disabled={processing}
                             className="btn btn-primary"
                         >
-                            {processing ? 'Subiendo...' : 'Subir Video'}
+                            {processing ? 'Uploading...' : 'Upload Video'}
                         </button>
                         <button
                             onClick={() => window.location.reload()}
                             className="btn btn-secondary"
                             disabled={processing}
                         >
-                            Cambiar Video
+                            Change Video
                         </button>
                     </>
                 )}
@@ -389,15 +389,15 @@ function SelectionStep({ previewUrl, videoInfo, selection, onSelectionChange, on
 
     return (
         <div className="selection-step">
-            <h2>Selecciona el área de la marca de agua</h2>
+            <h2>Select Watermark Area</h2>
 
             {videoInfo && (
                 <div className="video-info">
-                    <p><strong>Archivo:</strong> {videoInfo.filename}</p>
-                    <p><strong>Resolución:</strong> {videoInfo.resolution}</p>
-                    <p><strong>Duración:</strong> {videoInfo.duration.toFixed(2)}s</p>
+                    <p><strong>File:</strong> {videoInfo.filename}</p>
+                    <p><strong>Resolution:</strong> {videoInfo.resolution}</p>
+                    <p><strong>Duration:</strong> {videoInfo.duration.toFixed(2)}s</p>
                     <p><strong>FPS:</strong> {videoInfo.fps.toFixed(2)}</p>
-                    <p><strong>Frames totales:</strong> {videoInfo.total_frames}</p>
+                    <p><strong>Total Frames:</strong> {videoInfo.total_frames}</p>
                 </div>
             )}
 
@@ -410,28 +410,28 @@ function SelectionStep({ previewUrl, videoInfo, selection, onSelectionChange, on
                     className="preview-canvas"
                 />
                 <p className="instruction">
-                    Haz clic y arrastra para seleccionar el área de la marca de agua
+                    Click and drag to select the watermark area
                 </p>
             </div>
 
             {selection && (
                 <div className="selection-info">
                     <p>
-                        <strong>Área seleccionada:</strong> {Math.round(selection.width)} x {Math.round(selection.height)} px
+                        <strong>Selected Area:</strong> {Math.round(selection.width)} × {Math.round(selection.height)} px
                     </p>
                 </div>
             )}
 
             <div className="button-group">
                 <button onClick={onBack} className="btn btn-secondary">
-                    Volver
+                    Back
                 </button>
                 <button
                     onClick={onProcess}
                     disabled={!selection}
                     className="btn btn-primary"
                 >
-                    Procesar Video
+                    Process Video
                 </button>
             </div>
         </div>
@@ -444,7 +444,7 @@ function SelectionStep({ previewUrl, videoInfo, selection, onSelectionChange, on
 function ProcessingStep({ progress, videoInfo }) {
     return (
         <div className="processing-step">
-            <h2>Procesando video...</h2>
+            <h2>Processing Video</h2>
             <div className="processing-animation">
                 <div className="spinner"></div>
             </div>
@@ -456,11 +456,11 @@ function ProcessingStep({ progress, videoInfo }) {
             </div>
             <p className="progress-text">{progress}%</p>
             <p className="processing-info">
-                Esto puede tomar varios minutos dependiendo de la duración del video
+                This may take several minutes depending on video duration
                 ({videoInfo?.total_frames} frames)
             </p>
             <p className="warning-text">
-                ⚠️ No cierres esta ventana durante el procesamiento
+                ⚠ Do not close this window during processing
             </p>
         </div>
     );
@@ -473,9 +473,9 @@ function CompletedStep({ downloadUrl, videoInfo, onReset }) {
     return (
         <div className="completed-step">
             <div className="success-icon">✓</div>
-            <h2>¡Video procesado exitosamente!</h2>
+            <h2>Processing Complete</h2>
             <p className="success-message">
-                Tu video ha sido procesado y está listo para descargar
+                Your video has been processed and is ready to download
             </p>
 
             <div className="download-section">
@@ -484,12 +484,12 @@ function CompletedStep({ downloadUrl, videoInfo, onReset }) {
                     download
                     className="btn btn-download"
                 >
-                    📥 Descargar Video
+                    Download Video
                 </a>
             </div>
 
             <button onClick={onReset} className="btn btn-secondary">
-                Procesar otro video
+                Process Another Video
             </button>
         </div>
     );
