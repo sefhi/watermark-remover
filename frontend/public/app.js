@@ -110,6 +110,7 @@ function WatermarkRemoverApp() {
         formData.append('height', Math.round(selection.height));
 
         try {
+            // Iniciar procesamiento
             const response = await fetch(`${API_URL}/api/process/${sessionId}`, {
                 method: 'POST',
                 body: formData,
@@ -122,14 +123,38 @@ function WatermarkRemoverApp() {
 
             const data = await response.json();
 
-            setDownloadUrl(`${API_URL}${data.download_url}`);
-            setProgress(100);
-            setStep('completed');
+            // Consultar progreso periódicamente
+            const progressInterval = setInterval(async () => {
+                try {
+                    const progressResponse = await fetch(`${API_URL}/api/progress/${sessionId}`);
+
+                    if (progressResponse.ok) {
+                        const progressData = await progressResponse.json();
+
+                        setProgress(Math.round(progressData.progress));
+
+                        if (progressData.status === 'completed') {
+                            clearInterval(progressInterval);
+                            setDownloadUrl(`${API_URL}${progressData.download_url}`);
+                            setProgress(100);
+                            setStep('completed');
+                            setProcessing(false);
+                        } else if (progressData.status === 'error') {
+                            clearInterval(progressInterval);
+                            throw new Error(progressData.error || 'Error al procesar el video');
+                        }
+                    }
+                } catch (err) {
+                    clearInterval(progressInterval);
+                    setError(err.message);
+                    setStep('select');
+                    setProcessing(false);
+                }
+            }, 1000); // Consultar cada segundo
 
         } catch (err) {
             setError(err.message);
             setStep('select');
-        } finally {
             setProcessing(false);
         }
     };

@@ -6,6 +6,7 @@ FastAPI application para remover marcas de agua de videos usando IA
 import os
 import uuid
 import shutil
+import threading
 from pathlib import Path
 from typing import Optional
 
@@ -56,6 +57,9 @@ if STATIC_DIR.exists():
 
 # Almacenar sesiones de procesamiento
 sessions = {}
+
+# Almacenar progreso de procesamiento
+processing_progress = {}
 
 
 @app.get("/")
@@ -168,6 +172,42 @@ async def get_preview(session_id: str):
     return FileResponse(preview_path, media_type="image/jpeg")
 
 
+def process_video_background(session_id: str, watermark_area: dict, output_path: str):
+    """Función para procesar video en background"""
+    try:
+        session = sessions[session_id]
+        processor = session["processor"]
+
+        # Callback para actualizar progreso
+        def update_progress(progress):
+            processing_progress[session_id] = {
+                "status": "processing",
+                "progress": min(progress, 99)  # Mantener en 99% hasta que termine
+            }
+
+        # Procesar el video
+        processor.process_video(
+            watermark_area=watermark_area,
+            output_path=output_path,
+            progress_callback=update_progress
+        )
+
+        # Actualizar sesión y progreso
+        sessions[session_id]["processed_path"] = str(output_path)
+        sessions[session_id]["watermark_area"] = watermark_area
+        processing_progress[session_id] = {
+            "status": "completed",
+            "progress": 100
+        }
+
+    except Exception as e:
+        processing_progress[session_id] = {
+            "status": "error",
+            "progress": 0,
+            "error": str(e)
+        }
+
+
 @app.post("/api/process/{session_id}")
 async def process_video(
     session_id: str,
@@ -177,7 +217,7 @@ async def process_video(
     height: int = Form(...)
 ):
     """
-    Procesar el video removiendo la marca de agua del área seleccionada.
+    Iniciar procesamiento del video en background.
 
     Args:
         session_id: ID de la sesión
@@ -187,15 +227,13 @@ async def process_video(
         height: Alto del área seleccionada
 
     Returns:
-        status: Estado del procesamiento
+        status: Estado del procesamiento iniciado
         progress_url: URL para consultar el progreso
-        download_url: URL para descargar el video procesado
     """
     if session_id not in sessions:
         raise HTTPException(status_code=404, detail="Sesión no encontrada")
 
     session = sessions[session_id]
-    processor = session["processor"]
 
     # Validar coordenadas
     video_info = session["video_info"]
@@ -219,26 +257,57 @@ async def process_video(
     output_filename = f"{session_id}_processed{output_ext}"
     output_path = PROCESSED_DIR / output_filename
 
-    try:
-        # Procesar el video (esto puede tomar tiempo)
-        processor.process_video(
-            watermark_area=watermark_area,
-            output_path=str(output_path)
-        )
+    # Inicializar progreso
+    processing_progress[session_id] = {
+        "status": "processing",
+        "progress": 0
+    }
 
-        # Actualizar sesión
-        sessions[session_id]["processed_path"] = str(output_path)
-        sessions[session_id]["watermark_area"] = watermark_area
+    # Iniciar procesamiento en background
+    thread = threading.Thread(
+        target=process_video_background,
+        args=(session_id, watermark_area, str(output_path))
+    )
+    thread.daemon = True
+    thread.start()
 
-        return {
-            "status": "completed",
-            "message": "Video procesado exitosamente",
-            "download_url": f"/api/download/{session_id}",
-            "session_id": session_id
-        }
+    return {
+        "status": "processing",
+        "message": "Procesamiento iniciado",
+        "progress_url": f"/api/progress/{session_id}",
+        "session_id": session_id
+    }
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al procesar el video: {str(e)}")
+
+@app.get("/api/progress/{session_id}")
+async def get_progress(session_id: str):
+    """
+    Obtener el progreso del procesamiento.
+
+    Args:
+        session_id: ID de la sesión
+
+    Returns:
+        status: Estado del procesamiento (processing, completed, error)
+        progress: Porcentaje de progreso (0-100)
+        download_url: URL de descarga (solo si completed)
+    """
+    if session_id not in processing_progress:
+        raise HTTPException(status_code=404, detail="Procesamiento no encontrado")
+
+    progress_data = processing_progress[session_id]
+
+    response = {
+        "status": progress_data["status"],
+        "progress": progress_data["progress"]
+    }
+
+    if progress_data["status"] == "completed":
+        response["download_url"] = f"/api/download/{session_id}"
+    elif progress_data["status"] == "error":
+        response["error"] = progress_data.get("error", "Error desconocido")
+
+    return response
 
 
 @app.get("/api/download/{session_id}")
