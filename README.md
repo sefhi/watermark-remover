@@ -4,13 +4,13 @@ Aplicación web dockerizada para remover marcas de agua de videos usando Intelig
 
 ## ✨ Características
 
-- 🎥 **Soporte múltiples formatos**: MP4, MOV, AVI, MKV, WebM
+- 🎥 **Soporte múltiples formatos**: MP4, MOV, AVI, MKV, WebM, GIF
 - 🖱️ **Interfaz intuitiva**: Selección visual del área de marca de agua mediante canvas interactivo
 - 🤖 **IA de última generación**: Utiliza modelo pre-entrenado de HuggingFace
 - 🚀 **Alto rendimiento**: Soporte para GPU (CUDA), Apple Silicon (MPS) y CPU
 - 🐳 **Completamente dockerizado**: Fácil despliegue y portabilidad
 - 📊 **Progreso en tiempo real**: Indicadores de progreso durante el procesamiento
-- 💾 **Descarga automática**: Video procesado listo para descargar
+- 💾 **Descarga automática**: Video o GIF procesado listo para descargar
 
 ## 🏗️ Arquitectura
 
@@ -100,10 +100,10 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 ## 📖 Guía de Uso
 
-### Paso 1: Subir Video
-1. Arrastra tu video a la zona de drop o haz clic para seleccionarlo
-2. Formatos soportados: MP4, MOV, AVI, MKV, WebM
-3. Haz clic en "Subir Video"
+### Paso 1: Subir Video o GIF
+1. Arrastra tu video/GIF a la zona de drop o haz clic para seleccionarlo
+2. Formatos soportados: MP4, MOV, AVI, MKV, WebM, GIF
+3. Haz clic en "Upload Video"
 
 ### Paso 2: Seleccionar Área
 1. Se mostrará el primer frame del video en un canvas interactivo

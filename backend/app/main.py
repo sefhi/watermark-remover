@@ -74,10 +74,10 @@ async def root():
 @app.post("/api/upload")
 async def upload_video(file: UploadFile = File(...)):
     """
-    Endpoint para subir un video.
+    Endpoint para subir un video o GIF.
 
     Args:
-        file: Archivo de video (.mp4, .mov, .avi)
+        file: Archivo de video (.mp4, .mov, .avi, .gif)
 
     Returns:
         session_id: ID único de la sesión
@@ -88,7 +88,7 @@ async def upload_video(file: UploadFile = File(...)):
         resolution: Resolución del video (ancho x alto)
     """
     # Validar extensión del archivo
-    allowed_extensions = {".mp4", ".mov", ".avi", ".mkv", ".webm"}
+    allowed_extensions = {".mp4", ".mov", ".avi", ".mkv", ".webm", ".gif"}
     file_extension = Path(file.filename).suffix.lower()
 
     if file_extension not in allowed_extensions:
@@ -213,8 +213,10 @@ async def process_video(
         "height": height
     }
 
-    # Generar ruta de salida
-    output_filename = f"{session_id}_processed.mp4"
+    # Generar ruta de salida con extensión correcta
+    original_path = session["video_path"]
+    output_ext = ".gif" if original_path.lower().endswith(".gif") else ".mp4"
+    output_filename = f"{session_id}_processed{output_ext}"
     output_path = PROCESSED_DIR / output_filename
 
     try:
@@ -264,9 +266,12 @@ async def download_video(session_id: str):
     original_filename = sessions[session_id]["filename"]
     download_filename = f"processed_{original_filename}"
 
+    # Determinar media type según extensión
+    media_type = "image/gif" if processed_path.lower().endswith(".gif") else "video/mp4"
+
     return FileResponse(
         processed_path,
-        media_type="video/mp4",
+        media_type=media_type,
         filename=download_filename
     )
 

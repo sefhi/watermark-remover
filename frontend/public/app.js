@@ -45,7 +45,7 @@ function WatermarkRemoverApp() {
     const handleDrop = (e) => {
         e.preventDefault();
         const file = e.dataTransfer.files?.[0];
-        if (file && file.type.startsWith('video/')) {
+        if (file && (file.type.startsWith('video/') || file.type === 'image/gif')) {
             setVideoFile(file);
             setError(null);
         }
@@ -228,12 +228,12 @@ function UploadStep({ videoFile, onFileSelect, onDrop, onDragOver, onUpload, pro
                         </p>
                         <input
                             type="file"
-                            accept="video/mp4,video/mov,video/avi,video/mkv,video/webm"
+                            accept="video/mp4,video/mov,video/avi,video/mkv,video/webm,image/gif"
                             onChange={onFileSelect}
                             className="file-input"
                         />
                         <p className="supported-formats">
-                            Supported Formats: MP4, MOV, AVI, MKV, WebM
+                            Supported Formats: MP4, MOV, AVI, MKV, WebM, GIF
                         </p>
                     </>
                 ) : (

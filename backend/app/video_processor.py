@@ -286,64 +286,88 @@ class VideoProcessor:
             frames_dir: Directorio con los frames
             output_path: Ruta de salida del video
         """
-        # Extraer audio del video original
-        audio_path = frames_dir.parent / "audio.aac"
+        # Detectar si el archivo original es un GIF
+        is_gif = self.video_path.lower().endswith('.gif')
 
-        # Extraer audio
-        extract_audio_cmd = [
-            "ffmpeg", "-i", self.video_path,
-            "-vn", "-acodec", "copy",
-            str(audio_path),
-            "-y"
-        ]
-
-        try:
-            subprocess.run(extract_audio_cmd, check=True, capture_output=True)
-            has_audio = True
-        except subprocess.CalledProcessError:
-            print("Video no tiene audio o no se pudo extraer")
-            has_audio = False
-
-        # Crear video a partir de frames
-        frames_pattern = str(frames_dir / "frame_%06d.png")
-
-        if has_audio:
-            # Video con audio
+        if is_gif:
+            # Para GIF, usar configuración especial
+            frames_pattern = str(frames_dir / "frame_%06d.png")
             ffmpeg_cmd = [
                 "ffmpeg",
                 "-framerate", str(self.fps),
                 "-i", frames_pattern,
-                "-i", str(audio_path),
-                "-c:v", "libx264",
-                "-preset", "medium",
-                "-crf", "23",
-                "-c:a", "aac",
-                "-b:a", "192k",
-                "-pix_fmt", "yuv420p",
-                "-shortest",
+                "-vf", "split[s0][s1];[s0]palettegen=max_colors=256[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5",
+                "-loop", "0",  # Loop infinito
                 output_path,
                 "-y"
             ]
+
+            try:
+                result = subprocess.run(ffmpeg_cmd, check=True, capture_output=True, text=True)
+                print("GIF recompuesto exitosamente")
+            except subprocess.CalledProcessError as e:
+                print(f"Error en ffmpeg: {e.stderr}")
+                raise RuntimeError(f"Error al recomponer GIF: {e.stderr}")
         else:
-            # Video sin audio
-            ffmpeg_cmd = [
-                "ffmpeg",
-                "-framerate", str(self.fps),
-                "-i", frames_pattern,
-                "-c:v", "libx264",
-                "-preset", "medium",
-                "-crf", "23",
-                "-pix_fmt", "yuv420p",
-                output_path,
+            # Procesamiento normal de video
+            # Extraer audio del video original
+            audio_path = frames_dir.parent / "audio.aac"
+
+            # Extraer audio
+            extract_audio_cmd = [
+                "ffmpeg", "-i", self.video_path,
+                "-vn", "-acodec", "copy",
+                str(audio_path),
                 "-y"
             ]
 
-        try:
-            result = subprocess.run(ffmpeg_cmd, check=True, capture_output=True, text=True)
-            print("Video recompuesto exitosamente")
-        except subprocess.CalledProcessError as e:
-            print(f"Error en ffmpeg: {e.stderr}")
-            raise RuntimeError(f"Error al recomponer video: {e.stderr}")
+            try:
+                subprocess.run(extract_audio_cmd, check=True, capture_output=True)
+                has_audio = True
+            except subprocess.CalledProcessError:
+                print("Video no tiene audio o no se pudo extraer")
+                has_audio = False
+
+            # Crear video a partir de frames
+            frames_pattern = str(frames_dir / "frame_%06d.png")
+
+            if has_audio:
+                # Video con audio
+                ffmpeg_cmd = [
+                    "ffmpeg",
+                    "-framerate", str(self.fps),
+                    "-i", frames_pattern,
+                    "-i", str(audio_path),
+                    "-c:v", "libx264",
+                    "-preset", "medium",
+                    "-crf", "23",
+                    "-c:a", "aac",
+                    "-b:a", "192k",
+                    "-pix_fmt", "yuv420p",
+                    "-shortest",
+                    output_path,
+                    "-y"
+                ]
+            else:
+                # Video sin audio
+                ffmpeg_cmd = [
+                    "ffmpeg",
+                    "-framerate", str(self.fps),
+                    "-i", frames_pattern,
+                    "-c:v", "libx264",
+                    "-preset", "medium",
+                    "-crf", "23",
+                    "-pix_fmt", "yuv420p",
+                    output_path,
+                    "-y"
+                ]
+
+            try:
+                result = subprocess.run(ffmpeg_cmd, check=True, capture_output=True, text=True)
+                print("Video recompuesto exitosamente")
+            except subprocess.CalledProcessError as e:
+                print(f"Error en ffmpeg: {e.stderr}")
+                raise RuntimeError(f"Error al recomponer video: {e.stderr}")
 
     def cleanup(self):
         """Liberar recursos"""
